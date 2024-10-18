@@ -4,8 +4,6 @@
 import os
 from logging.config import dictConfig
 from dotenv import load_dotenv
-from .db_handeller import DBConnector
-from .models import User
 
 
 class DefaultConfig:
@@ -18,6 +16,8 @@ class DefaultConfig:
 
     PREFIX_PATH = "/{}".format(os.environ.get("DEPLOYMENT_VERSION"))
 
+
+
     DATABASE = {
         "name": os.environ.get("POSTGRESQL_DB_NAME"),
         "engine": os.environ.get("POSTGRESQL_DB_ENGINE"),
@@ -27,20 +27,28 @@ class DefaultConfig:
         "port": os.environ.get("POSTGRESQL_DB_PORT"),
     }
 
+    REDIS = {
+        'host' : os.environ.get("REDIS_CONFIG_HOST"),
+        'port' : os.environ.get('REDIS_CONFIG_PORT'),
+        'db' : os.environ.get('REDIS_CONFIG_DB'),
+        'password' : os.environ.get('REDIS_CONFIG_PASSWORD')
+    }
+
+    JWT_EXPIRE = {
+        'hours' : int(os.environ.get("JWT_EXPIRE_HOURS")),
+        'mins' : int(os.environ.get("JWT_EXPIRE_MINUTES")),
+        'sec' : int(os.environ.get("JWT_EXPIRE_SECONDS")),
+    }
+
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    JWT_SECRET_KEY = os.environ.get("SECRET_KEY")
+
     # PROPAGATE_EXCEPTIONS = True
 
     SECRET_KEY = os.environ.get("SECRET_KEY")
     SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
 
-    @staticmethod
-    def create_tables():
-        db_connector = DBConnector()
-        db = db_connector.pg_db
-        db.create_tables(
-            [
-                User
-            ]
-        )
+    
 
     @staticmethod
     def init_loggers():

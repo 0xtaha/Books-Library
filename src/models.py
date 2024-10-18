@@ -1,5 +1,6 @@
 import peewee
-from .db_handeller import DBConnector
+from datetime import datetime
+from .connections_handeller import DBConnector
 
 db_connector = DBConnector()
 class BaseModel(peewee.Model):
@@ -14,7 +15,7 @@ class User(BaseModel):
     active = peewee.BooleanField(default=False)
     last_login_at = peewee.DateTimeField(null=True)
     last_login_ip = peewee.CharField(null=True)
-    login_count = peewee.IntegerField(default=0)
+    login_count = peewee.IntegerField(default=1)
 
     # Apikey has been removed from users
 
@@ -31,3 +32,10 @@ class User(BaseModel):
             )
         }
         return content
+    
+
+    def update_after_login(self, new_ip):
+        self.login_count = self.login_count +1
+        self.last_login_ip = new_ip
+        self.last_login_at = datetime.now()
+        self.save()

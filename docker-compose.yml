@@ -1,9 +1,14 @@
 version: "3.9"
 services:
+  cache:
+    image: redis:6.2.1-alpine
+    container_name: cache
+    command: [ "--requirepass '${REDIS_CONFIG_PASSWORD}'" ]
+    ports:
+      - "${REDIS_CONFIG_PORT}:6379"
   database:
     image: postgres:9.6.2-alpine
-    container_name: pigp_database
-    # network_mode: host
+    container_name: database
     command: postgres -c listen_addresses='*'
     ports:
       - "${POSTGRESQL_DB_PORT}:5432"
@@ -11,8 +16,8 @@ services:
       POSTGRES_DB: ${POSTGRESQL_DB_NAME}
       POSTGRES_USER: ${POSTGRESQL_DB_USER}
       POSTGRES_PASSWORD: ${POSTGRESQL_DB_PASSWD}
-    volumes:
-      - "./data/database/postgres-data:/var/lib/postgresql/data"
+    # volumes:
+    #   - "./data/database/postgres-data:/var/lib/postgresql/data"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRESQL_DB_NAME}"]
       interval: 30s
@@ -24,7 +29,6 @@ services:
       context: "./"
       args:
         build_env: prod
-    # network_mode: host
     container_name: app
     ports:
       - "80:5000"
