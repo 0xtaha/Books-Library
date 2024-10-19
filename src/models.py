@@ -1,4 +1,5 @@
 import peewee
+from playhouse import shortcuts 
 from datetime import datetime
 from .connections_handeller import DBConnector
 
@@ -39,3 +40,54 @@ class User(BaseModel):
         self.last_login_ip = new_ip
         self.last_login_at = datetime.now()
         self.save()
+
+
+class Book(BaseModel):
+    id = peewee.AutoField()
+    title = peewee.CharField(max_length=255)
+    # content should be BigBitField, but for simplecty let's assume it's a text
+    content = peewee.TextField()
+
+    def serialize_with_content(self):
+        content = {
+            field: getattr(self, field)
+            for field in (
+                "id",
+                "title",
+                "content",
+            )
+        }
+        return content
+    
+    def serialize(self):
+        content = {
+            field: getattr(self, field)
+            for field in (
+                "id",
+                "title",
+            )
+        }
+        return content
+
+class Review(BaseModel):
+    id = peewee.AutoField()
+    book = peewee.ForeignKeyField(Book, null=False, on_delete='CASCADE')
+    user = peewee.ForeignKeyField(User, null=False, on_delete='CASCADE')
+    desc = peewee.TextField(null=False)
+
+    
+    def serialize(self):
+        to_exclude = (
+            User.id,
+            User.last_login_at,
+            User.last_login_ip,
+            User.active,
+            User.password,
+            User.login_count,
+            Book.title,
+            Book.content,
+            Book.id
+        )
+        book_dict = shortcuts.model_to_dict(self, exclude=to_exclude)
+        del book_dict['book']
+        return book_dict
