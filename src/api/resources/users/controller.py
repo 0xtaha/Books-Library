@@ -1,4 +1,3 @@
-from math import ceil
 from flask import request
 from flask_jwt_extended import get_jwt, verify_jwt_in_request, get_jwt_identity
 from flask_jwt_extended.exceptions import JWTExtendedException
@@ -10,14 +9,13 @@ from .marshallers.users_serializers import (
     user_login_serializer,
     user_fields_model,
     user_standard_serializer,
-    user_retrieve_serializer,
     user_creation_serializer
 )
 from .parsers.user_reset_password import user_reset_password_parser
 from .parsers.user_login_parser import user_login_parser
 from .parsers.user_sign_up_parser import user_signup_parser
 from .parsers.user_get_parser import user_get_parser
-from .service.user_service import UserService
+from .services import UserService
 from ...support.security import valid_jwt_required
 
 user_ns = NAMESPACES["User"]

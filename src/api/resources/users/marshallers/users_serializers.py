@@ -14,12 +14,6 @@ user_fields["login_count"] = fields.Integer()
 
 user_fields_model = user_ns.model("userFieldsModel", user_fields)
 
-user_retrieve = {}
-user_retrieve["total_users_count"] = fields.Integer()
-user_retrieve["users"] = fields.Nested(user_fields_model)
-
-user_retrieve_serializer = user_ns.model("users", user_retrieve)
-
 user_standard_serializer = user_ns.model(
     "UserStandard",
     {
