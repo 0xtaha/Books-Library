@@ -1,14 +1,12 @@
 import datetime
-import secrets
-import redis
-from flask import request , app, current_app
-from .....connections_handeller import RedisConnector
+from flask import request
+from ....connections_handeller import RedisConnector
 from flask_restx import abort
 from flask_jwt_extended import create_access_token
-from ....support.security import get_identity, hash_password, is_email_RFC5322 , get_user_by_credentials
-from ....support import exceptions
-from .....models_services.user_model_services import UserModelServices as User
-from .....default_config import DefaultConfig
+from ...support.security import get_identity, hash_password, is_email_RFC5322 , get_user_by_credentials
+from ...support import exceptions
+from ....models_services.user_model_services import UserModelServices as User
+from ....default_config import DefaultConfig
 
 class UserService:
 
@@ -71,7 +69,6 @@ class UserService:
         return user.id, jwt_token
 
     @classmethod
-    # Todo : get jwt session from redis
     def get_jwt_session(cls, user_id):
         client = cls.redis_connector.rdb
         namespace = "USER_ACTIVE_SESSIONS_NAMESPACE"
