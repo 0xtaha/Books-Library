@@ -84,10 +84,5 @@ class Review(BaseModel):
             User.active,
             User.password,
             User.login_count,
-            Book.title,
-            Book.content,
-            Book.id
         )
-        book_dict = shortcuts.model_to_dict(self, exclude=to_exclude)
-        del book_dict['book']
-        return book_dict
+        return shortcuts.model_to_dict(self, exclude=to_exclude)

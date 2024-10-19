@@ -4,7 +4,7 @@ class ReviewModelService:
 
     @classmethod
     def get_by_book(cls, book):
-        return Review.select().where(
+        return Review.select(Review.id, Review.desc, Review.user).where(
             Review.book == book
         ).join(User, on=(Review.user == User.id))
     
