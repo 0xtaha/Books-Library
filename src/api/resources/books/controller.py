@@ -1,4 +1,4 @@
-from flask import request, current_app
+from flask import request
 from flask_restx import Resource, abort
 from flask_jwt_extended import verify_jwt_in_request
 from ...support import exceptions
@@ -25,7 +25,7 @@ class RetriveAllBooks(Resource):
             args = get_books_parser.parse_args()
             return BookServices.get_list(args), 200
         except exceptions.DBError as e:
-            current_app.logger.error(f"error on {request.url}, {e}")
+            book_ns.logger.error(f"error on {request.url}, {e}")
             abort(500, 'Internal server Error')
 
 @book_ns.route('/content')
@@ -43,7 +43,7 @@ class RetriveBookContent(Resource):
             args = get_book_parser.parse_args()
             return BookServices.get_book_content(book_id=args['book_id']), 200
         except exceptions.DBError as e:
-            current_app.logger.error(f"error on {request.url}, {e}")
+            book_ns.logger.error(f"error on {request.url}, {e}")
             abort(500, 'Internal server Error')
 
 
@@ -62,7 +62,7 @@ class RetriveBookReviews(Resource):
             args = get_book_parser.parse_args()
             return BookServices.get_book_and_reviews(book_id=args['book_id']), 200
         except exceptions.DBError as e:
-            current_app.logger.error(f"error on {request.url}, {e}")
+            book_ns.logger.error(f"error on {request.url}, {e}")
             abort(500, 'Internal server Error')
 
     @book_ns.expect(post_review_parser)
@@ -82,5 +82,5 @@ class RetriveBookReviews(Resource):
                 user_id= get_identity()
                 ), 201
         except exceptions.DBError as e:
-            current_app.logger.error(f"error on {request.url}, {e}")
+            book_ns.logger.error(f"error on {request.url}, {e}")
             abort(500, 'Internal server Error')

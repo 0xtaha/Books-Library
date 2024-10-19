@@ -43,6 +43,9 @@ class RetriveCurrentUserInfo(Resource):
         except (ExpiredSignatureError, JWTExtendedException):
             http_response = {"message": "disconnected", "status": "fail"}
             return http_response
+        except exceptions.DBError as e:
+            user_ns.logger.error(f"error on {request.url}, {e}")
+            abort(500, 'Internal server Error')
 
 
 @user_ns.route("/status")
@@ -141,13 +144,13 @@ class UserLogout(Resource):
             UserService.log_out_user(jwt)
             http_response = {
                 "status": "success",
-                "message": "Token successfully blacklisted",
+                "message": "Token successfully removed",
             }
             return http_response
         except exceptions.AlreadyExists:
             http_response = {
                 "status": "success",
-                "message": "JWT token already blacklisted",
+                "message": "JWT token already removed",
             }
             return http_response
         except exceptions.DBError as e:
@@ -169,9 +172,15 @@ class UserSignUp(Resource):
     @user_ns.response(409, "Already exists")
     @user_ns.response(500, "Internal Server Error")
     def post(self):
-        args = user_signup_parser.parse_args(strict=True)
-        return UserService.register_new_user(args), 201
-       
+        try :
+            args = user_signup_parser.parse_args(strict=True)
+            return UserService.register_new_user(args), 201
+        except exceptions.DBError as e:
+            user_ns.logger.error(
+                "The following Exception occurred on this endpoint:"
+                f" '{request.url}' : {e}"
+            )
+            abort(500, "Internal Server Error")
 
 
     
