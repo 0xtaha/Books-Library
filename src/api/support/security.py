@@ -191,9 +191,9 @@ def get_jwt_session(user_id):
     return jwt.decode() if jwt else None
 
 
-def sanitize_xss(input_string):
+def sanitize_input(input_string):
     """
-    Sanitize the input string to remove potential XSS scripts.
+    Sanitize the input string to remove potential XSS scripts and SQL injection attempts.
     
     This function performs the following actions:
     1. Escapes HTML special characters
@@ -201,6 +201,7 @@ def sanitize_xss(input_string):
     3. Removes common XSS vector tags
     4. Removes inline CSS
     5. Removes data URIs
+    6. Checks for common SQL injection patterns
     
     Args:
     input_string (str): The input string to sanitize
@@ -210,6 +211,22 @@ def sanitize_xss(input_string):
     """
     if not isinstance(input_string, str):
         return ""
+    
+    sql_patterns = [
+        r'\bSELECT\b.*\bFROM\b',
+        r'\bINSERT\b.*\bINTO\b',
+        r'\bUPDATE\b.*\bSET\b',
+        r'\bDELETE\b.*\bFROM\b',
+        r'\bDROP\b.*\bTABLE\b',
+        r'\bUNION\b.*\bSELECT\b',
+        r'--',
+        r'\b(AND|OR)\b.*(=|>|<|\bin\b|\blike\b).*[\'\"]',
+        r'\/\*.*\*\/',
+    ]
+    
+    for pattern in sql_patterns:
+        if re.search(pattern, input_string, re.IGNORECASE):
+            raise ValueError("Potential SQL injection detected")
 
     # Step 1: Escape HTML special characters
     sanitized = escape(input_string)
@@ -227,5 +244,8 @@ def sanitize_xss(input_string):
     
     # Step 5: Remove data URIs
     sanitized = re.sub(r'data:\s*\w+/\w+;base64,\S+', '', sanitized, flags=re.IGNORECASE)
+    
+    # Step 6: Check for common SQL injection patterns
+    
     
     return sanitized

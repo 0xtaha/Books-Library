@@ -3,7 +3,7 @@ from flask_restx import Resource, abort
 from flask_jwt_extended import verify_jwt_in_request
 from ...support import exceptions
 from ..namespaces import NAMESPACES
-from ...support.security import valid_jwt_required, get_identity, sanitize_xss
+from ...support.security import valid_jwt_required, get_identity, sanitize_input
 from .marshallers import book_model, book_content_model, book_review_model, books_response_model
 from .parsers import get_book_parser, get_books_parser, post_review_parser
 from .services import BookServices
@@ -74,13 +74,17 @@ class RetriveBookReviews(Resource):
     def post(self):
         try:
             verify_jwt_in_request()
-            desc = sanitize_xss(desc)
+            args = post_review_parser.parse_args()
+            desc = sanitize_input(args['desc'])
             args = post_review_parser.parse_args()
             return BookServices.create_review_on_book(
                 book_id=args['book_id'],
                 desc=desc,
                 user_id= get_identity()
                 ), 201
+        except ValueError as e:
+            book_ns.logger.error(f"error on {request.url}, {e}")
+            abort(400, 'Invalid Please check you request')
         except exceptions.DBError as e:
             book_ns.logger.error(f"error on {request.url}, {e}")
             abort(500, 'Internal server Error')
