@@ -1,11 +1,16 @@
 version: "3.9"
 services:
   cache:
-    image: redis:6.2.1-alpine
+    image: redis:6
     container_name: cache
     command: [ "--requirepass '${REDIS_CONFIG_PASSWORD}'" ]
     ports:
       - "${REDIS_CONFIG_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
   database:
     image: postgres:9.6.2-alpine
     container_name: database
@@ -19,7 +24,7 @@ services:
     # volumes:
     #   - "./data/database/postgres-data:/var/lib/postgresql/data"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRESQL_DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRESQL_DB_NAME}" , "${POSTGRESQL_DB_USER}"]
       interval: 30s
       timeout: 60s
       retries: 5
@@ -34,6 +39,8 @@ services:
       - "80:5000"
     depends_on:
       database:
+        condition: service_healthy
+      cache:
         condition: service_healthy
     env_file:
       - "./.env"
